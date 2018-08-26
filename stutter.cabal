@@ -1,14 +1,14 @@
 name:                stutter
 version:             0.1.0.0
--- synopsis:
+synopsis:            A simple lisp-like language
 -- description:
-homepage:            https://github.com/githubuser/stutter#readme
+homepage:            https://github.com/refast00/stutter#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2018 Author name here
-category:            Web
+author:              redfast00
+maintainer:          redfast00@gmail.com
+copyright:           2018 redfast00
+category:            Language
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
@@ -17,4 +17,5 @@ executable stutter
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5
+  build-depends:       base >= 4.7 && < 5, unordered-containers, MBot >= 0.2.4.1, mtl
+  ghc-options:         -Wall -Wno-missing-home-modules

@@ -7,13 +7,14 @@ import           Data.Maybe
 import           Parser
 import           Types
 
+-- TODO: comments
 exprParse :: Parser Expr
 exprParse = useFirstParser [numberParser, sexprParse, fexprParse, stringParse, symbolParse]
 
 numberParser :: Parser Expr
 numberParser = do
     f <- numbers
-    s <- commaPart <|> return []
+    s <- commaPart <|> return [] -- TODO: use optional and allow negative numbers
     return $ StutterNumber (read (f ++ s) :: Double)
 
 numbers :: Parser String
@@ -54,11 +55,14 @@ fexprParse = do
 stringParse :: Parser Expr
 stringParse = do
     character '"'
-    content <- many (sat isLetter <|> sat isDigit) -- TODO: allow more characters
+    content <- many stringCharacterParse -- TODO: \n
     character '"'
     return $ StutterString content
 
+stringCharacterParse :: Parser Char
+stringCharacterParse = sat (`notElem` "\\\"") <|> (character '\\' >> sat (`elem` "\\\""))
+
 symbolParse :: Parser Expr
 symbolParse = do
-    name <- many (sat isLetter) -- TODO allow more characters
+    name <- many (sat (\x -> isLetter x || (x `elem` "_+-/*\\&|<=>"))) -- TODO maybe allow even more characters
     return $ StutterSymbol name

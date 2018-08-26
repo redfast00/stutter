@@ -1,6 +1,9 @@
-module StutterEvaluator where
+module StutterEvaluator (evalStatement) where
 
-import Types
+import           Types
 
-plusBuiltin :: [Expr] -> Expr
--- Check that all numbers, length 2 and then add them
+evalStatement :: Expr -> TransformerStack Expr
+evalStatement x@(StutterSexpr _) = do
+    liftIO $ putStrLn "test"
+    return $ StutterString "executed sexpr"
+evalStatement a = return a
