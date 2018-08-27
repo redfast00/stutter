@@ -4,6 +4,7 @@ import           Control.Monad    (forever, void)
 import           System.Exit
 import           System.IO
 
+import           Builtins
 import           Parser           (parse)
 import           StutterEvaluator
 import           StutterParser
@@ -26,8 +27,8 @@ eval input = do
     let result = parseStatement input
     either putStrLn succesparse result
     where succesparse x = do
-            putStrLn "successful parse"
-            extracted <- runTransformerStack undefined emptyEnvironment (evalStatement x)
+            print x
+            extracted <- runTransformerStack undefined defaultEnvironment (evalStatement x)
             either putStrLn print extracted
 
 

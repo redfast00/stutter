@@ -64,5 +64,5 @@ stringCharacterParse = sat (`notElem` "\\\"") <|> (character '\\' >> sat (`elem`
 
 symbolParse :: Parser Expr
 symbolParse = do
-    name <- many (sat (\x -> isLetter x || (x `elem` "_+-/*\\&|<=>"))) -- TODO maybe allow even more characters
+    name <- some (sat (\x -> isLetter x || (x `elem` "_+-/*\\&|<=>"))) -- TODO maybe allow even more characters
     return $ StutterSymbol name

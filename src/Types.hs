@@ -1,4 +1,4 @@
-module Types (Expr(..), TransformerStack, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..), emptyEnvironment) where
+module Types (Expr(..), emptyEnvironment, addToEnvironment, Symbol, TransformerStack, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
@@ -15,6 +15,8 @@ data Environment = Environment (Map.HashMap Symbol Expr) (Maybe Environment)
 
 emptyEnvironment = Environment Map.empty Nothing
 
+addToEnvironment :: Symbol -> Expr -> Environment -> Environment
+addToEnvironment symbol expr (Environment varmap parent) = Environment (Map.insert symbol expr varmap) parent
 
 data Expr = StutterSexpr [Expr]  |
             StutterFexpr [Expr]  |
@@ -22,7 +24,7 @@ data Expr = StutterSexpr [Expr]  |
             StutterSymbol Symbol |
             StutterString String |
             StutterBuiltin ([Expr] -> TransformerStack Expr) |
-            StutterFunction (Expr, Expr, Environment)
+            StutterFunction ([Symbol], [Expr], Environment)
 
 instance Show Expr where
     show (StutterSexpr xs)   = "(" ++ unwords (fmap show xs) ++ ")"
