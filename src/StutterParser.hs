@@ -1,4 +1,4 @@
-module StutterParser (exprParse) where
+module StutterParser (fileParse, replLineParse) where
 
 import           Control.Applicative (many, optional, some, (<|>))
 import           Data.Char
@@ -6,6 +6,16 @@ import           Data.Maybe
 
 import           Parser
 import           Types
+
+replLineParse :: Parser Expr
+replLineParse = StutterSexpr <$> separatedExprParse
+
+fileParse :: Parser [Expr]
+fileParse = many (do
+        f <- exprParse
+        separation
+        return f
+        )
 
 -- TODO: comments
 exprParse :: Parser Expr

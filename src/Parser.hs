@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Parser (Parser, space, character, sat, useFirstParser, parse, separation) where
+module Parser (Parser, space, character, sat, useFirstParser, parse, separation, parseStatement) where
 
 import           Control.Applicative
 import           Control.Monad
@@ -9,6 +9,11 @@ import           Data.Char
 newtype Parser a = Parser (String -> [(a, String)])
 
 parse (Parser p) = p
+
+parseStatement :: String -> Parser a -> Either String a
+parseStatement a parser = case parse parser a of
+    [(x,"")] -> Right x
+    _        -> Left "parsing failed"
 
 -- TODO: apply include space?
 apply :: Parser a -> String -> [(a,String)]

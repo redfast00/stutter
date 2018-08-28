@@ -73,6 +73,12 @@ defSingle (symbol, value) = do
     liftState $ put new
     return ()
 
+showBuiltin :: [Expr] -> TransformerStack Expr
+showBuiltin exprs = do
+    lengthCheck exprs 1
+    liftIO $ print (head exprs)
+    return $ StutterSexpr []
+
 idLambda = StutterFunction (["x"], [StutterSymbol "x"], Environment Map.empty (Just defaultEnvironment))
 idVarargs = StutterFunction (["...", "xs"], [StutterSymbol "xs"], Environment Map.empty (Just defaultEnvironment))
 
@@ -85,6 +91,7 @@ builtins = [
     ("*", StutterBuiltin mulBuiltin),
     ("/", StutterBuiltin divBuiltin),
     ("\\", StutterBuiltin lambdaBuiltin),
-    ("def", StutterBuiltin defBuiltin)
+    ("def", StutterBuiltin defBuiltin),
+    ("show", StutterBuiltin showBuiltin)
     ]
 defaultEnvironment = Environment (Map.fromList builtins) Nothing

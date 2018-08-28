@@ -1,55 +1,68 @@
 module Main where
 
-import           Control.Monad    (forever, void)
+import           Control.Monad      (foldM_)
+import           System.Environment (getArgs)
 import           System.Exit
 import           System.IO
 
 import           Builtins
-import           Parser           (parse)
-import           StutterEvaluator
-import           StutterParser
+import           Parser             (parseStatement)
+import           StutterEvaluator   (evalStatement)
+import           StutterParser      (fileParse, replLineParse)
 import           Types
 
+import           MBot               (Device)
+
 main :: IO ()
-main = readEvalPrintLoop
+main = do
+    args <- getArgs
+    let device = undefined
+    case args of
+        []       -> readEvalPrintLoop defaultEnvironment device
+        (path:_) -> runFile defaultEnvironment device path
 
-readEvalPrintLoop :: IO ()
-readEvalPrintLoop = do
+readEvalPrintLoop :: Environment -> Device -> IO ()
+readEvalPrintLoop environment device = do
     hSetBuffering stdout NoBuffering
-    repl' defaultEnvironment
-    return ()
+    repl' environment device
 
-repl' :: Environment -> IO ()
-repl' env = do
+runFile :: Environment -> Device -> FilePath -> IO ()
+runFile environment device path = do
+    content <- readFile path
+    let parsed = parseStatement content fileParse
+    case parsed of
+        Left err -> putStrLn $ "ERROR in parse: " ++ err
+        Right exprs -> foldM_ infold (device, Right (undefined, environment)) exprs
+
+infold :: (Device, Either ErrorMessage (Expr, Environment)) -> Expr -> IO (Device, (Either ErrorMessage (Expr, Environment)))
+infold inp statement = case inp of
+    a@(_, Left _)      -> return a
+    (device, Right (_, env)) -> do
+        q <- eval statement env device
+        return (device, q)
+
+repl' :: Environment -> Device -> IO ()
+repl' env device = do
     putStr "stutter> "
     line <- getLine
     case line of
         ":q" -> exitSuccess
-        x    -> do
-            newEnvironment <- eval x env
-            case newEnvironment of
-                Nothing -> repl' env
-                (Just newenv) -> repl' newenv
+        _    -> do
+            let parsed = parseStatement line replLineParse
+            case parsed of
+                Left err -> do
+                    putStrLn $ "ERROR in parse: " ++ err
+                    repl' env device
+                Right expr -> do
+                    result <- eval expr env device
+                    case result of
+                        Left err -> do
+                            putStrLn $ "ERROR in eval: " ++ err
+                            repl' env device
+                        Right (retval, newenv) -> do
+                            print retval
+                            repl' newenv device
 
-eval :: String -> Environment -> IO (Maybe Environment)
-eval input env = do
-    let result = parseStatement input
-    either failparse succesparse result
-    where succesparse x = do
-            -- print x -- print AST
-            extracted <- runTransformerStack undefined env (evalStatement x)
-            case extracted of
-                (Left errorMessage) -> do
-                    putStrLn errorMessage
-                    return Nothing
-                (Right (result, environment)) -> do
-                    print result
-                    return (Just environment)
-          failparse x = do
-               print x
-               return Nothing
-
-parseStatement :: String -> Either String Expr
-parseStatement a = case parse exprParse a of
-    [(x,"")] -> Right x
-    _        -> Left "parsing failed"
+-- | Evaluate single statement
+eval :: Expr -> Environment -> Device -> IO (Either ErrorMessage (Expr, Environment))
+eval statement env device = runTransformerStack device env (evalStatement statement)

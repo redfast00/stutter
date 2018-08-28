@@ -1,4 +1,4 @@
-module Types (Expr(..), emptyEnvironment, addToEnvironment, Symbol, TransformerStack, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
+module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, Symbol, TransformerStack, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
