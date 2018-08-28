@@ -13,6 +13,8 @@ type Symbol = String
 data Environment = Environment (Map.HashMap Symbol Expr) (Maybe Environment)
     deriving (Show)
 
+-- TODO use stack of environments instead of maybe Environment
+
 emptyEnvironment = Environment Map.empty Nothing
 
 addToEnvironment :: Symbol -> Expr -> Environment -> Environment

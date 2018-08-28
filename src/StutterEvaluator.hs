@@ -18,6 +18,14 @@ evalStatement s@(StutterSexpr arguments) = case arguments of
                 evaluatedArgs <- mapM evalStatement xs
                 builtin evaluatedArgs
             (StutterFunction (lambdaArgs, expression, environment)) -> case lambdaArgs of
+                ["...", collector] -> do
+                    let finalEnvironment = addToEnvironment collector (StutterFexpr xs) environment
+                    oldenv <- liftState get -- TODO clean this up
+                    liftState $ put finalEnvironment
+                    retval <- evalStatement (StutterSexpr expression)
+                    liftState $ put oldenv
+                    return retval
+                ("...":_) -> liftExcept $ throwError "incorrect vararg syntax"
                 [] -> liftExcept $ throwError "no more arguments to apply"
                 [variable] -> do
                     let finalEnvironment = addToEnvironment variable (head xs) environment
