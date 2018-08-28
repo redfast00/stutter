@@ -34,7 +34,7 @@ runFile environment device path = do
         Left err -> putStrLn $ "ERROR in parse: " ++ err
         Right exprs -> foldM_ infold (device, Right (undefined, environment)) exprs
 
-infold :: (Device, Either ErrorMessage (Expr, Environment)) -> Expr -> IO (Device, (Either ErrorMessage (Expr, Environment)))
+infold :: (Device, TransformerStackResult Expr) -> Expr -> IO (Device, TransformerStackResult Expr)
 infold inp statement = case inp of
     a@(_, Left _)      -> return a
     (device, Right (_, env)) -> do
@@ -64,5 +64,5 @@ repl' env device = do
                             repl' newenv device
 
 -- | Evaluate single statement
-eval :: Expr -> Environment -> Device -> IO (Either ErrorMessage (Expr, Environment))
+eval :: Expr -> Environment -> Device -> IO (TransformerStackResult Expr)
 eval statement env device = runTransformerStack device env (evalStatement statement)

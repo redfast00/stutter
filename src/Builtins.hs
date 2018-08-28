@@ -79,12 +79,7 @@ showBuiltin exprs = do
     liftIO $ print (head exprs)
     return $ StutterSexpr []
 
-idLambda = StutterFunction (["x"], [StutterSymbol "x"], Environment Map.empty (Just defaultEnvironment))
-idVarargs = StutterFunction (["...", "xs"], [StutterSymbol "xs"], Environment Map.empty (Just defaultEnvironment))
-
 builtins = [
-    ("id", idLambda),
-    ("idv", idVarargs),
     ("lifeTheUniverse", StutterNumber 42),
     ("+", StutterBuiltin addBuiltin),
     ("-", StutterBuiltin subBuiltin),

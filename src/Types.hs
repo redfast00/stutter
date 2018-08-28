@@ -1,4 +1,4 @@
-module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, Symbol, TransformerStack, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
+module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
@@ -40,6 +40,8 @@ instance Show Expr where
 type ErrorMessage = String
 -- Monad transformer stack
 type TransformerStack a = ReaderT Device (StateT Environment (ExceptT ErrorMessage IO)) a
+
+type TransformerStackResult a = Either ErrorMessage (a, Environment)
 
 runTransformerStack :: Device -> Environment -> TransformerStack a -> IO (Either ErrorMessage (a, Environment))
 runTransformerStack device environment action = runExceptT $ runStateT (runReaderT action device) environment
