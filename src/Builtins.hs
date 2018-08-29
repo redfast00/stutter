@@ -1,4 +1,4 @@
-module Builtins (defaultEnvironment) where
+module Builtins (defaultEnvironmentStack) where
 
 import           Types
 
@@ -54,7 +54,7 @@ lambdaBuiltin exprs = do
     function <- checkFexpr (head (tail exprs))
     unpackedArgs <- mapM checkSymbol args
     parentEnv <- liftState get
-    return $ StutterFunction (unpackedArgs, function, Environment Map.empty (Just parentEnv))
+    return $ StutterFunction (unpackedArgs, function, emptyEnvironment)
 
 defBuiltin :: [Expr]-> TransformerStack Expr
 defBuiltin exprs = case exprs of
@@ -62,16 +62,9 @@ defBuiltin exprs = case exprs of
         vars <- checkFexpr varlist
         lengthCheck values (length vars)
         unpackedVars <- mapM checkSymbol vars
-        mapM_ defSingle (zip unpackedVars values)
+        mapM_ (uncurry addToEnvironment) (zip unpackedVars values)
         return $ StutterSexpr []
     _ -> liftExcept $ throwError "Need at least two arguments"
-
-defSingle :: (Symbol, Expr) -> TransformerStack ()
-defSingle (symbol, value) = do
-    env <- liftState get
-    let new = addToEnvironment symbol value env
-    liftState $ put new
-    return ()
 
 showBuiltin :: [Expr] -> TransformerStack Expr
 showBuiltin exprs = do
@@ -89,4 +82,4 @@ builtins = [
     ("def", StutterBuiltin defBuiltin),
     ("show", StutterBuiltin showBuiltin)
     ]
-defaultEnvironment = Environment (Map.fromList builtins) Nothing
+defaultEnvironmentStack = [Map.fromList builtins]

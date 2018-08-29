@@ -1,24 +1,47 @@
-module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment(..)) where
+module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment, EnvStack) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
-import           Control.Monad.State
+import           Control.Monad.State (get, put, modify, StateT, runStateT)
+import           Control.Applicative ((<|>))
 import qualified Data.HashMap.Strict  as Map
 
 import           MBot
 
 
 type Symbol = String
-
-data Environment = Environment (Map.HashMap Symbol Expr) (Maybe Environment)
-    deriving (Show)
+type Environment = Map.HashMap Symbol Expr
+type EnvStack = [Environment]
 
 -- TODO use stack of environments instead of maybe Environment
 
-emptyEnvironment = Environment Map.empty Nothing
+emptyEnvironment = Map.empty
 
-addToEnvironment :: Symbol -> Expr -> Environment -> Environment
-addToEnvironment symbol expr (Environment varmap parent) = Environment (Map.insert symbol expr varmap) parent
+pushEnvironment :: Environment -> TransformerStack ()
+pushEnvironment env = liftState $ modify $ \x -> env:x
+
+popEnvironment :: TransformerStack Environment
+popEnvironment = do
+    a <- liftState get
+    return $ head a
+
+addToEnvironment :: Symbol -> Expr -> TransformerStack ()
+addToEnvironment symbol expr = do
+    env <- liftState get
+    case env of
+        [] -> liftExcept $ throwError "no env??"
+        (e:rest) -> do
+            let new = Map.insert symbol expr e
+            liftState $ put (new:rest)
+    return ()
+
+lookupEnvironment :: Symbol -> TransformerStack Expr
+lookupEnvironment symbol = do
+    env <- liftState get
+    let result = foldl1 (<|>) (fmap (Map.lookup symbol) env)
+    case result of
+        Nothing -> liftExcept $ throwError "undefined variable"
+        (Just x) -> return x
 
 data Expr = StutterSexpr [Expr]  |
             StutterFexpr [Expr]  |
@@ -39,18 +62,18 @@ instance Show Expr where
 
 type ErrorMessage = String
 -- Monad transformer stack
-type TransformerStack a = ReaderT Device (StateT Environment (ExceptT ErrorMessage IO)) a
+type TransformerStack a = ReaderT Device (StateT EnvStack (ExceptT ErrorMessage IO)) a
 
-type TransformerStackResult a = Either ErrorMessage (a, Environment)
+type TransformerStackResult a = Either ErrorMessage (a, EnvStack)
 
-runTransformerStack :: Device -> Environment -> TransformerStack a -> IO (Either ErrorMessage (a, Environment))
+runTransformerStack :: Device -> EnvStack -> TransformerStack a -> IO (TransformerStackResult a)
 runTransformerStack device environment action = runExceptT $ runStateT (runReaderT action device) environment
 
 -- Future proof when adding more monad transformers
-liftReader :: ReaderT Device (StateT Environment (ExceptT ErrorMessage IO)) a -> TransformerStack a
+liftReader :: ReaderT Device (StateT EnvStack (ExceptT ErrorMessage IO)) a -> TransformerStack a
 liftReader = id
 
-liftState :: StateT Environment (ExceptT ErrorMessage IO) a -> TransformerStack a
+liftState :: StateT EnvStack (ExceptT ErrorMessage IO) a -> TransformerStack a
 liftState = lift
 
 liftExcept :: ExceptT ErrorMessage IO a -> TransformerStack a

@@ -5,7 +5,7 @@ import           System.Environment (getArgs)
 import           System.Exit
 import           System.IO
 
-import           Builtins
+import           Builtins   (defaultEnvironmentStack)
 import           Parser             (parseStatement)
 import           StutterEvaluator   (evalStatement)
 import           StutterParser      (fileParse, replLineParse)
@@ -18,15 +18,15 @@ main = do
     args <- getArgs
     let device = undefined
     case args of
-        []       -> readEvalPrintLoop defaultEnvironment device
-        (path:_) -> runFile defaultEnvironment device path
+        []       -> readEvalPrintLoop defaultEnvironmentStack device
+        (path:_) -> runFile defaultEnvironmentStack device path
 
-readEvalPrintLoop :: Environment -> Device -> IO ()
+readEvalPrintLoop :: EnvStack -> Device -> IO ()
 readEvalPrintLoop environment device = do
     hSetBuffering stdout NoBuffering
     repl' environment device
 
-runFile :: Environment -> Device -> FilePath -> IO ()
+runFile :: EnvStack -> Device -> FilePath -> IO ()
 runFile environment device path = do
     content <- readFile path
     let parsed = parseStatement content fileParse
@@ -41,7 +41,7 @@ infold inp statement = case inp of
         q <- eval statement env device
         return (device, q)
 
-repl' :: Environment -> Device -> IO ()
+repl' :: EnvStack -> Device -> IO ()
 repl' env device = do
     putStr "stutter> "
     line <- getLine
@@ -64,5 +64,5 @@ repl' env device = do
                             repl' newenv device
 
 -- | Evaluate single statement
-eval :: Expr -> Environment -> Device -> IO (TransformerStackResult Expr)
+eval :: Expr -> EnvStack -> Device -> IO (TransformerStackResult Expr)
 eval statement env device = runTransformerStack device env (evalStatement statement)
