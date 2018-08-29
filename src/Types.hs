@@ -1,4 +1,4 @@
-module Types (Expr(..), ErrorMessage, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment, EnvStack) where
+module Types (Expr(..), ErrorMessage, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment, EnvStack) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
@@ -17,6 +17,9 @@ type EnvStack = [Environment]
 
 emptyEnvironment = Map.empty
 
+createEnvironment :: [(Symbol, Expr)] -> Environment
+createEnvironment x = Map.fromList x
+
 pushEnvironment :: Environment -> TransformerStack ()
 pushEnvironment env = liftState $ modify $ \x -> env:x
 
@@ -31,9 +34,12 @@ addToEnvironment symbol expr = do
     case env of
         [] -> liftExcept $ throwError "no env??"
         (e:rest) -> do
-            let new = Map.insert symbol expr e
+            let new = defineVariable symbol expr e
             liftState $ put (new:rest)
     return ()
+
+defineVariable :: Symbol -> Expr -> Environment -> Environment
+defineVariable = Map.insert
 
 lookupEnvironment :: Symbol -> TransformerStack Expr
 lookupEnvironment symbol = do

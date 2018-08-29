@@ -4,7 +4,6 @@ import           Types
 
 import           Control.Monad.Except
 import           Control.Monad.State
-import qualified Data.HashMap.Strict  as Map
 
 checkNumber :: Expr -> TransformerStack Double
 checkNumber (StutterNumber a) = return a
@@ -19,9 +18,9 @@ checkSymbol (StutterSymbol a) = return a
 checkSymbol q                 = liftExcept $ throwError $ "not a symbol" ++ show q
 
 lengthCheck :: [Expr] -> Int -> TransformerStack ()
-lengthCheck exprs expected = case length exprs of
-    expected -> return ()
-    _ -> liftExcept $ throwError $ "Incorrect amount of arguments, expected " ++ show expected
+lengthCheck exprs expected = if expected ==  length exprs
+    then return ()
+    else liftExcept $ throwError $ "Incorrect amount of arguments, expected " ++ show expected
 
 binOp :: [Expr] -> TransformerStack (Double, Double)
 binOp exprs = do
@@ -53,7 +52,6 @@ lambdaBuiltin exprs = do
     args <- checkFexpr (head exprs)
     function <- checkFexpr (head (tail exprs))
     unpackedArgs <- mapM checkSymbol args
-    parentEnv <- liftState get
     return $ StutterFunction (unpackedArgs, function, emptyEnvironment)
 
 defBuiltin :: [Expr]-> TransformerStack Expr
@@ -82,4 +80,4 @@ builtins = [
     ("def", StutterBuiltin defBuiltin),
     ("show", StutterBuiltin showBuiltin)
     ]
-defaultEnvironmentStack = [Map.fromList builtins]
+defaultEnvironmentStack = [createEnvironment builtins]
