@@ -8,7 +8,7 @@ import           Parser
 import           Types
 
 replLineParse :: Parser Expr
-replLineParse = StutterSexpr <$> line separatedExprParse
+replLineParse = StutterSexpr <$> separatedExprParse
 
 line :: Parser a -> Parser a
 line p = do

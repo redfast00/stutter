@@ -1,2 +1,8 @@
+# This will output '8'
 (show (+ 5 3))
-(show (+ 5 8))
+# It even works with negative numbers
+(show (+ 20 -5))
+# Variables
+(def [a] 25)
+(def [b] 30)
+(show (+ a b))
