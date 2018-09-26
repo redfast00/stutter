@@ -1,6 +1,6 @@
 module StutterParser (fileParse, replLineParse) where
 
-import           Control.Applicative (many, optional, some, (<|>))
+import           Control.Applicative (empty, many, optional, some, (<|>))
 import           Data.Char
 import           Data.Maybe
 
@@ -8,14 +8,31 @@ import           Parser
 import           Types
 
 replLineParse :: Parser Expr
-replLineParse = StutterSexpr <$> separatedExprParse
+replLineParse = StutterSexpr <$> line separatedExprParse
+
+line :: Parser a -> Parser a
+line p = do
+    x <- p
+    _ <- character '\n'
+    return x
 
 fileParse :: Parser [Expr]
-fileParse = many (do
-        f <- exprParse
-        _ <- separation
-        return f
-        )
+fileParse = many $ skipMany (comment <|> line empty) >> replLineParse
+
+comment :: Parser String
+comment = do
+    _ <- character '#'
+    many $ sat (/= '\n')
+
+whitespace :: Parser Char
+whitespace = character ' ' <|> character '\t'
+
+space :: Parser String
+space  = many whitespace
+
+separation :: Parser String
+separation = some whitespace
+
 
 exprParse :: Parser Expr
 exprParse = useFirstParser [numberParser, sexprParse, fexprParse, stringParse, symbolParse]

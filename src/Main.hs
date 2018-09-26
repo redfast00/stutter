@@ -5,7 +5,7 @@ import           System.Environment (getArgs)
 import           System.Exit
 import           System.IO
 
-import           Builtins   (defaultEnvironmentStack)
+import           Builtins           (defaultEnvironmentStack)
 import           Parser             (parseStatement)
 import           StutterEvaluator   (evalStatement)
 import           StutterParser      (fileParse, replLineParse)
@@ -34,12 +34,12 @@ runFile environment path = do
             result <- foldM infold (Right (undefined, environment)) exprs
             case result of
                 Left errormessage -> putStrLn $ "ERROR while evaluating: " ++ errormessage
-                _ -> putStrLn "SUCCESS"
+                _ -> return ()
 
 infold :: TransformerStackResult Expr -> Expr -> IO (TransformerStackResult Expr)
 infold inp statement = case inp of
-    a@(Left _)      -> return a
-    Right (_, env)             -> eval statement env
+    a@(Left _)     -> return a
+    Right (_, env) -> eval statement env
 
 repl :: EnvStack -> IO ()
 repl env = do
