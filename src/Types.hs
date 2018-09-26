@@ -1,24 +1,23 @@
-module Types (Expr(..), ErrorMessage, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftReader, liftState, runTransformerStack, Environment, EnvStack) where
+module Types (Builtin, Expr(..), ErrorMessage, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
 
 import           Control.Monad.Except
-import           Control.Monad.Reader
 import           Control.Monad.State (get, put, modify, StateT, runStateT)
 import           Control.Applicative ((<|>))
 import qualified Data.HashMap.Strict  as Map
-
-import           MBot
 
 
 type Symbol = String
 type Environment = Map.HashMap Symbol Expr
 type EnvStack = [Environment]
+type Builtin = [Expr] -> TransformerStack Expr
 
 -- TODO use stack of environments instead of maybe Environment
 
+emptyEnvironment :: Environment
 emptyEnvironment = Map.empty
 
 createEnvironment :: [(Symbol, Expr)] -> Environment
-createEnvironment x = Map.fromList x
+createEnvironment = Map.fromList
 
 pushEnvironment :: Environment -> TransformerStack ()
 pushEnvironment env = liftState $ modify $ \x -> env:x
@@ -46,7 +45,7 @@ lookupEnvironment symbol = do
     env <- liftState get
     let result = foldl1 (<|>) (fmap (Map.lookup symbol) env)
     case result of
-        Nothing -> liftExcept $ throwError "undefined variable"
+        Nothing -> liftExcept $ throwError $ "undefined variable: " ++ show symbol
         (Just x) -> return x
 
 data Expr = StutterSexpr [Expr]  |
@@ -64,26 +63,24 @@ instance Show Expr where
     show (StutterSymbol x)   = "S=" ++ x
     show (StutterString x)   = show x
     show (StutterBuiltin _)  = "\\builtin"
-    show (StutterFunction _) = "\\function" -- TODO improve this
+    show (StutterFunction (symbols, _, _)) = "\\function " ++ show symbols -- TODO improve this
 
 type ErrorMessage = String
 -- Monad transformer stack
-type TransformerStack a = ReaderT Device (StateT EnvStack (ExceptT ErrorMessage IO)) a
+type TransformerStack a = (StateT EnvStack (ExceptT ErrorMessage IO)) a
 
 type TransformerStackResult a = Either ErrorMessage (a, EnvStack)
 
-runTransformerStack :: Device -> EnvStack -> TransformerStack a -> IO (TransformerStackResult a)
-runTransformerStack device environment action = runExceptT $ runStateT (runReaderT action device) environment
+runTransformerStack :: EnvStack -> TransformerStack a -> IO (TransformerStackResult a)
+runTransformerStack environment action = runExceptT $ runStateT action environment
 
--- Future proof when adding more monad transformers
-liftReader :: ReaderT Device (StateT EnvStack (ExceptT ErrorMessage IO)) a -> TransformerStack a
-liftReader = id
+-- Futureproof when adding more monad transformers
 
 liftState :: StateT EnvStack (ExceptT ErrorMessage IO) a -> TransformerStack a
-liftState = lift
+liftState = id
 
 liftExcept :: ExceptT ErrorMessage IO a -> TransformerStack a
-liftExcept = lift . lift
+liftExcept = lift
 
 -- liftIO :: IO a -> TransformerStack a
 -- liftIO = lift . lift . lift

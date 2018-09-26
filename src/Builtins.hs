@@ -3,7 +3,7 @@ module Builtins (defaultEnvironmentStack) where
 import           Types
 
 import           Control.Monad.Except
-import           Control.Monad.State
+
 
 checkNumber :: Expr -> TransformerStack Double
 checkNumber (StutterNumber a) = return a
@@ -29,24 +29,29 @@ binOp exprs = do
     b <- checkNumber (head (tail exprs))
     return (a, b)
 
+addBuiltin :: Builtin
 addBuiltin exprs = do
     (a, b) <- binOp exprs
     return $ StutterNumber (a + b)
 
+subBuiltin :: Builtin
 subBuiltin exprs = do
     (a, b) <- binOp exprs
     return $ StutterNumber (a - b)
 
+mulBuiltin :: Builtin
 mulBuiltin exprs = do
     (a, b) <- binOp exprs
     return $ StutterNumber (a * b)
 
+divBuiltin :: Builtin
 divBuiltin exprs = do
     (a, b) <- binOp exprs
     case b of
         0 -> liftExcept $ throwError "Can't divide by zero"
         _ -> return $ StutterNumber (a * b)
 
+lambdaBuiltin :: Builtin
 lambdaBuiltin exprs = do
     lengthCheck exprs 2
     args <- checkFexpr (head exprs)
@@ -54,7 +59,7 @@ lambdaBuiltin exprs = do
     unpackedArgs <- mapM checkSymbol args
     return $ StutterFunction (unpackedArgs, function, emptyEnvironment)
 
-defBuiltin :: [Expr]-> TransformerStack Expr
+defBuiltin :: Builtin
 defBuiltin exprs = case exprs of
     (varlist:values@(_:_)) -> do
         vars <- checkFexpr varlist
@@ -64,20 +69,22 @@ defBuiltin exprs = case exprs of
         return $ StutterSexpr []
     _ -> liftExcept $ throwError "Need at least two arguments"
 
-showBuiltin :: [Expr] -> TransformerStack Expr
+showBuiltin :: Builtin
 showBuiltin exprs = do
     lengthCheck exprs 1
     liftIO $ print (head exprs)
     return $ StutterSexpr []
 
-builtins = [
-    ("lifeTheUniverse", StutterNumber 42),
-    ("+", StutterBuiltin addBuiltin),
-    ("-", StutterBuiltin subBuiltin),
-    ("*", StutterBuiltin mulBuiltin),
-    ("/", StutterBuiltin divBuiltin),
-    ("\\", StutterBuiltin lambdaBuiltin),
-    ("def", StutterBuiltin defBuiltin),
-    ("show", StutterBuiltin showBuiltin)
-    ]
-defaultEnvironmentStack = [createEnvironment builtins]
+defaultEnvironmentStack :: EnvStack
+defaultEnvironmentStack =
+    [createEnvironment builtins]
+    where builtins = [
+                        ("lifeTheUniverse", StutterNumber 42),
+                        ("+", StutterBuiltin addBuiltin),
+                        ("-", StutterBuiltin subBuiltin),
+                        ("*", StutterBuiltin mulBuiltin),
+                        ("/", StutterBuiltin divBuiltin),
+                        ("\\", StutterBuiltin lambdaBuiltin),
+                        ("def", StutterBuiltin defBuiltin),
+                        ("show", StutterBuiltin showBuiltin)
+                     ]

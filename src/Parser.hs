@@ -8,6 +8,7 @@ import           Data.Char
 
 newtype Parser a = Parser (String -> [(a, String)])
 
+parse :: Parser a -> String -> [(a, String)]
 parse (Parser p) = p
 
 parseStatement :: String -> Parser a -> Either String a

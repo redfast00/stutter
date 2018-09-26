@@ -13,19 +13,19 @@ replLineParse = StutterSexpr <$> separatedExprParse
 fileParse :: Parser [Expr]
 fileParse = many (do
         f <- exprParse
-        separation
+        _ <- separation
         return f
         )
 
--- TODO: comments
 exprParse :: Parser Expr
 exprParse = useFirstParser [numberParser, sexprParse, fexprParse, stringParse, symbolParse]
 
 numberParser :: Parser Expr
 numberParser = do
+    sign <- optional $ character '-'
     f <- numbers
-    s <- commaPart <|> return [] -- TODO: use optional and allow negative numbers
-    return $ StutterNumber (read (f ++ s) :: Double)
+    s <- commaPart <|> return []
+    return $ StutterNumber (read (maybeToList sign ++ f ++ s) :: Double)
 
 numbers :: Parser String
 numbers = some (sat isDigit)
@@ -38,35 +38,35 @@ commaPart = do
 
 separatedExprParse :: Parser [Expr]
 separatedExprParse = do
-    space
+    _ <- space
     expressions <- many (do
         f <- exprParse
-        separation
+        _ <- separation
         return f
                         )
     last_expression <- optional exprParse
-    space
+    _ <- space
     return $ expressions ++ maybeToList last_expression
 
 sexprParse :: Parser Expr
 sexprParse = do
-    character '('
+    _ <- character '('
     expressions <- separatedExprParse
-    character ')'
+    _ <- character ')'
     return $ StutterSexpr expressions
 
 fexprParse :: Parser Expr
 fexprParse = do
-    character '['
+    _ <- character '['
     expressions <- separatedExprParse
-    character ']'
+    _ <- character ']'
     return $ StutterFexpr expressions
 
 stringParse :: Parser Expr
 stringParse = do
-    character '"'
+    _ <- character '"'
     content <- many stringCharacterParse -- TODO: \n
-    character '"'
+    _ <- character '"'
     return $ StutterString content
 
 stringCharacterParse :: Parser Char

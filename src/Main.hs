@@ -1,6 +1,6 @@
 module Main where
 
-import           Control.Monad      (foldM_)
+import           Control.Monad      (foldM)
 import           System.Environment (getArgs)
 import           System.Exit
 import           System.IO
@@ -11,38 +11,38 @@ import           StutterEvaluator   (evalStatement)
 import           StutterParser      (fileParse, replLineParse)
 import           Types
 
-import           MBot               (Device)
 
 main :: IO ()
 main = do
     args <- getArgs
-    let device = undefined
     case args of
-        []       -> readEvalPrintLoop defaultEnvironmentStack device
-        (path:_) -> runFile defaultEnvironmentStack device path
+        []       -> readEvalPrintLoop defaultEnvironmentStack
+        (path:_) -> runFile defaultEnvironmentStack path
 
-readEvalPrintLoop :: EnvStack -> Device -> IO ()
-readEvalPrintLoop environment device = do
+readEvalPrintLoop :: EnvStack -> IO ()
+readEvalPrintLoop environment = do
     hSetBuffering stdout NoBuffering
-    repl' environment device
+    repl environment
 
-runFile :: EnvStack -> Device -> FilePath -> IO ()
-runFile environment device path = do
+runFile :: EnvStack -> FilePath -> IO ()
+runFile environment path = do
     content <- readFile path
     let parsed = parseStatement content fileParse
     case parsed of
         Left err -> putStrLn $ "ERROR in parse: " ++ err
-        Right exprs -> foldM_ infold (device, Right (undefined, environment)) exprs
+        Right exprs -> do
+            result <- foldM infold (Right (undefined, environment)) exprs
+            case result of
+                Left errormessage -> putStrLn $ "ERROR while evaluating: " ++ errormessage
+                _ -> putStrLn "SUCCESS"
 
-infold :: (Device, TransformerStackResult Expr) -> Expr -> IO (Device, TransformerStackResult Expr)
+infold :: TransformerStackResult Expr -> Expr -> IO (TransformerStackResult Expr)
 infold inp statement = case inp of
-    a@(_, Left _)      -> return a
-    (device, Right (_, env)) -> do
-        q <- eval statement env device
-        return (device, q)
+    a@(Left _)      -> return a
+    Right (_, env)             -> eval statement env
 
-repl' :: EnvStack -> Device -> IO ()
-repl' env device = do
+repl :: EnvStack -> IO ()
+repl env = do
     putStr "stutter> "
     line <- getLine
     case line of
@@ -52,17 +52,17 @@ repl' env device = do
             case parsed of
                 Left err -> do
                     putStrLn $ "ERROR in parse: " ++ err
-                    repl' env device
+                    repl env
                 Right expr -> do
-                    result <- eval expr env device
+                    result <- eval expr env
                     case result of
                         Left err -> do
                             putStrLn $ "ERROR in eval: " ++ err
-                            repl' env device
+                            repl env
                         Right (retval, newenv) -> do
                             print retval
-                            repl' newenv device
+                            repl newenv
 
 -- | Evaluate single statement
-eval :: Expr -> EnvStack -> Device -> IO (TransformerStackResult Expr)
-eval statement env device = runTransformerStack device env (evalStatement statement)
+eval :: Expr -> EnvStack -> IO (TransformerStackResult Expr)
+eval statement env = runTransformerStack env (evalStatement statement)

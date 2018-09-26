@@ -2,15 +2,12 @@ module StutterEvaluator (evalStatement) where
 
 import           Types
 
-import           Control.Applicative
 import           Control.Monad.Except
-import           Control.Monad.State
 
 evalStatement :: Expr -> TransformerStack Expr
-evalStatement s@(StutterSexpr arguments) = case arguments of
-    []  -> return s
-    [x] -> evalStatement x
-    (x:xs) -> do
+evalStatement s@(StutterSexpr []) = return s
+evalStatement (StutterSexpr [x]) = evalStatement x
+evalStatement (StutterSexpr (x:xs)) = do
         function <- evalStatement x
         case function of
             (StutterBuiltin builtin) -> do
@@ -25,11 +22,14 @@ evalStatement s@(StutterSexpr arguments) = case arguments of
                 [variable] -> do
                     let finalEnvironment = defineVariable variable (head xs) environment
                     evalFunction finalEnvironment expression
-                (variable:_) -> return $ StutterFunction (tail lambdaArgs, expression, defineVariable variable (head xs) environment)
+                (variable:_) -> do
+                    let newenv = defineVariable variable (head xs) environment
+                    evalStatement $ StutterSexpr $ StutterFunction (tail lambdaArgs, expression, newenv) : tail xs
             _ -> liftExcept $ throwError "s-expr should start with function"
 evalStatement (StutterSymbol symbol) = lookupEnvironment symbol
 evalStatement a = return a
 
+evalFunction :: Environment -> [Expr] -> TransformerStack Expr
 evalFunction finalEnvironment expression = do
     pushEnvironment finalEnvironment
     retval <- evalStatement (StutterSexpr expression)
