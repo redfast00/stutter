@@ -1,0 +1,3 @@
+def [ignore] ( \ [ignd returned] [returned] )
+def [f] ( \ [huidig] [if (cmp huidig 100) [ignore (show huidig) (f (+ 1 huidig))] [show huidig]])
+(f 1)
