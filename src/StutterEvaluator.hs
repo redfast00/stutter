@@ -12,7 +12,8 @@ evalStatement (StutterSexpr (x:xs)) = do
         case function of
             (StutterBuiltin builtin) -> do
                 evaluatedArgs <- mapM evalStatement xs
-                builtin evaluatedArgs
+                result <- builtin evaluatedArgs
+                evalStatement result
             (StutterFunction (lambdaArgs, expression, environment)) -> case lambdaArgs of
                 ["...", collector] -> do
                     let finalEnvironment = defineVariable collector (StutterFexpr xs) environment

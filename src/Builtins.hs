@@ -75,6 +75,12 @@ showBuiltin exprs = do
     liftIO $ print (head exprs)
     return $ StutterSexpr []
 
+evalBuiltin :: Builtin
+evalBuiltin exprs = do
+    lengthCheck exprs 1
+    function <- checkFexpr (head exprs)
+    return $ StutterSexpr function
+
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
     [createEnvironment builtins]
@@ -86,5 +92,6 @@ defaultEnvironmentStack =
                         ("/", StutterBuiltin divBuiltin),
                         ("\\", StutterBuiltin lambdaBuiltin),
                         ("def", StutterBuiltin defBuiltin),
-                        ("show", StutterBuiltin showBuiltin)
+                        ("show", StutterBuiltin showBuiltin),
+                        ("eval", StutterBuiltin evalBuiltin)
                      ]
