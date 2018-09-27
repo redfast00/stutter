@@ -7,7 +7,8 @@ import           Control.Monad.Except
 evalStatement :: Expr -> TransformerStack Expr
 evalStatement s@(StutterSexpr []) = return s
 evalStatement (StutterSexpr [x]) = evalStatement x
-evalStatement (StutterSexpr (x:xs)) = do
+evalStatement (StutterSexpr (x:xxs)) = do
+        xs <- mapM evalStatement xxs
         function <- evalStatement x
         case function of
             (StutterBuiltin builtin) -> do
