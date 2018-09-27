@@ -25,6 +25,7 @@ pushEnvironment env = liftState $ modify $ \x -> env:x
 popEnvironment :: TransformerStack Environment
 popEnvironment = do
     a <- liftState get
+    liftState $ modify tail
     return $ head a
 
 addToEnvironment :: Symbol -> Expr -> TransformerStack ()
