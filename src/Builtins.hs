@@ -98,7 +98,7 @@ lastBuiltin exprs = last <$> fexprOp exprs
 
 -- TODO: cleanup
 ifBuiltin :: Builtin
-ifBuiltin [StutterNumber s, iftrue@(StutterFexpr _), iffalse@(StutterFexpr _)] = case s of
+ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] = case s of
     0 -> evalBuiltin [iffalse]
     _ -> evalBuiltin [iftrue]
 ifBuiltin _ = liftExcept $ throwError "if needs three arguments: number, fexpr, fexpr"
