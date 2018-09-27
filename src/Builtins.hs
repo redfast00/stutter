@@ -115,6 +115,10 @@ emptyBuiltin :: Builtin
 emptyBuiltin [StutterFexpr []] = return $ StutterNumber 1
 emptyBuiltin _ = return $ StutterNumber 0
 
+prependBuiltin :: Builtin
+prependBuiltin [a, StutterFexpr l] = return $ StutterFexpr $ a:l
+prependBuiltin _ = liftExcept $ throwError "prepend: takes a f-expr and an expression"
+
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
     [createEnvironment builtins]
@@ -134,5 +138,6 @@ defaultEnvironmentStack =
                         ("last", StutterBuiltin lastBuiltin),
                         ("if", StutterBuiltin ifBuiltin),
                         ("cmp", StutterBuiltin compareBuiltin),
-                        ("empty", StutterBuiltin emptyBuiltin)
+                        ("empty", StutterBuiltin emptyBuiltin),
+                        (":", StutterBuiltin prependBuiltin)
                      ]
