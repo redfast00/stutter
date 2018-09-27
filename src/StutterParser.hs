@@ -17,7 +17,12 @@ line p = do
     return x
 
 fileParse :: Parser [Expr]
-fileParse = many $ skipMany (comment <|> line empty) >> replLineParse
+fileParse = many (do
+    _  <- many (comment <|> line empty)
+    f <- line replLineParse
+    _  <- many (comment <|> line empty)
+    return f
+                 )
 
 comment :: Parser String
 comment = do
