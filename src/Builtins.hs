@@ -111,6 +111,10 @@ compareBuiltin [StutterNumber a, StutterNumber b]
     | otherwise = return $ StutterNumber 1
 compareBuiltin _ = liftExcept $ throwError "Can only compare numbers"
 
+emptyBuiltin :: Builtin
+emptyBuiltin [StutterFexpr []] = return $ StutterNumber 1
+emptyBuiltin _ = return $ StutterNumber 0
+
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
     [createEnvironment builtins]
@@ -129,5 +133,6 @@ defaultEnvironmentStack =
                         ("init", StutterBuiltin initBuiltin),
                         ("last", StutterBuiltin lastBuiltin),
                         ("if", StutterBuiltin ifBuiltin),
-                        ("cmp", StutterBuiltin compareBuiltin)
+                        ("cmp", StutterBuiltin compareBuiltin),
+                        ("empty", StutterBuiltin emptyBuiltin)
                      ]
