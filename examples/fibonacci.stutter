@@ -1,0 +1,23 @@
+def [bool] (\ [a] [if a [0] [1]])
+
+def [not] (\ [a] [- 1 a])
+
+def [==] (\ [a b] [not (bool (cmp a b))])
+
+def [<] (\ [a b] [== (cmp a b) -1])
+
+def [>] (\ [a b] [== (cmp a b) 1])
+
+def [fib] (\ [argument] [if (== argument 1) [if (== argument 0) [+ (fib (- argument 2)) (fib (- argument 1))] [0]] [1]])
+
+# Starts from 0
+
+# 1
+show (fib 2)
+# 2
+show (fib 3)
+
+# 3
+show (fib 4)
+# 5
+show (fib 5)
