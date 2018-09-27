@@ -75,11 +75,33 @@ showBuiltin exprs = do
     liftIO $ print (head exprs)
     return $ StutterSexpr []
 
-evalBuiltin :: Builtin
-evalBuiltin exprs = do
+fexprOp :: [Expr] -> TransformerStack [Expr]
+fexprOp exprs = do
     lengthCheck exprs 1
-    function <- checkFexpr (head exprs)
-    return $ StutterSexpr function
+    checkFexpr (head exprs)
+
+evalBuiltin :: Builtin
+evalBuiltin exprs = StutterSexpr <$> fexprOp exprs
+
+-- TODO: check list not empty, throw error
+headBuiltin :: Builtin
+headBuiltin exprs = head <$> fexprOp exprs
+
+tailBuiltin :: Builtin
+tailBuiltin exprs = StutterFexpr . tail <$> fexprOp exprs
+
+initBuiltin :: Builtin
+initBuiltin exprs = StutterFexpr . init <$> fexprOp exprs
+
+lastBuiltin :: Builtin
+lastBuiltin exprs = last <$> fexprOp exprs
+
+-- TODO: cleanup
+ifBuiltin :: Builtin
+ifBuiltin [StutterNumber s, iftrue@(StutterFexpr _), iffalse@(StutterFexpr _)] = case s of
+    0 -> evalBuiltin [iffalse]
+    _ -> evalBuiltin [iftrue]
+ifBuiltin _ = liftExcept $ throwError "if needs three arguments: number, fexpr, fexpr"
 
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
@@ -93,5 +115,10 @@ defaultEnvironmentStack =
                         ("\\", StutterBuiltin lambdaBuiltin),
                         ("def", StutterBuiltin defBuiltin),
                         ("show", StutterBuiltin showBuiltin),
-                        ("eval", StutterBuiltin evalBuiltin)
+                        ("eval", StutterBuiltin evalBuiltin),
+                        ("head", StutterBuiltin headBuiltin),
+                        ("tail", StutterBuiltin tailBuiltin),
+                        ("init", StutterBuiltin initBuiltin),
+                        ("last", StutterBuiltin lastBuiltin),
+                        ("if", StutterBuiltin ifBuiltin)
                      ]
