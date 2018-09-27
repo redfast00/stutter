@@ -103,6 +103,14 @@ ifBuiltin [StutterNumber s, iftrue@(StutterFexpr _), iffalse@(StutterFexpr _)] =
     _ -> evalBuiltin [iftrue]
 ifBuiltin _ = liftExcept $ throwError "if needs three arguments: number, fexpr, fexpr"
 
+-- TODO: compare other types in prelude
+compareBuiltin :: Builtin
+compareBuiltin [StutterNumber a, StutterNumber b]
+    | a < b     = return $ StutterNumber (-1)
+    | a == b    = return $ StutterNumber 0
+    | otherwise = return $ StutterNumber 1
+compareBuiltin _ = liftExcept $ throwError "Can only compare numbers"
+
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
     [createEnvironment builtins]
@@ -120,5 +128,6 @@ defaultEnvironmentStack =
                         ("tail", StutterBuiltin tailBuiltin),
                         ("init", StutterBuiltin initBuiltin),
                         ("last", StutterBuiltin lastBuiltin),
-                        ("if", StutterBuiltin ifBuiltin)
+                        ("if", StutterBuiltin ifBuiltin),
+                        ("cmp", StutterBuiltin compareBuiltin)
                      ]
