@@ -131,10 +131,10 @@ defaultEnvironmentStack =
     [createEnvironment builtins]
     where builtins = [
                         ("lifeTheUniverse", StutterNumber 42),
-                        ("+", StutterBuiltin addBuiltin),
-                        ("-", StutterBuiltin subBuiltin),
-                        ("*", StutterBuiltin mulBuiltin),
-                        ("/", StutterBuiltin divBuiltin),
+                        ("iadd", StutterBuiltin addBuiltin),
+                        ("isub", StutterBuiltin subBuiltin),
+                        ("imul", StutterBuiltin mulBuiltin),
+                        ("idiv", StutterBuiltin divBuiltin),
                         ("\\", StutterBuiltin lambdaBuiltin),
                         ("def", StutterBuiltin defBuiltin),
                         ("show", StutterBuiltin showBuiltin),
