@@ -1,4 +1,4 @@
-module Types (Builtin, Expr(..), ErrorMessage, emptyExpr, throwStutterError, tryStack, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
+module Types (Builtin, Expr(..), ErrorMessage, emptyExpr, throwStutterError, deepAddToEnvironment,  tryStack, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
 
 import           Control.Applicative  ((<|>))
 import           Control.Monad.Except
@@ -35,6 +35,14 @@ addToEnvironment symbol expr = do
         (e:rest) -> do
             let new = defineVariable symbol expr e
             liftState $ put (new:rest)
+    return ()
+
+deepAddToEnvironment :: Symbol -> Expr -> TransformerStack ()
+deepAddToEnvironment symbol expr = do
+    env <- liftState get
+    case env of
+        [] -> liftExcept $ throwError "no env??"
+        _ -> liftState $ put $ fmap (defineVariable symbol expr) env
     return ()
 
 defineVariable :: Symbol -> Expr -> Environment -> Environment

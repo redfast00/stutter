@@ -67,7 +67,17 @@ defBuiltin exprs = case exprs of
         unpackedVars <- mapM checkSymbol vars
         mapM_ (uncurry addToEnvironment) (zip unpackedVars values)
         return $ StutterSexpr []
-    _ -> liftExcept $ throwError "Need at least two arguments"
+    _ -> liftExcept $ throwError "def: need at least two arguments"
+
+deepDefBuiltin :: Builtin
+deepDefBuiltin exprs = case exprs of
+    (varlist:values@(_:_)) -> do
+        vars <- checkFexpr varlist
+        lengthCheck values (length vars)
+        unpackedVars <- mapM checkSymbol vars
+        mapM_ (uncurry deepAddToEnvironment) (zip unpackedVars values)
+        return $ StutterSexpr []
+    _ -> liftExcept $ throwError "deepdef: need at least two arguments"
 
 showBuiltin :: Builtin
 showBuiltin exprs = do
@@ -103,6 +113,13 @@ lastBuiltin exprs = do
     case lst of
         [] -> throwStutterError "Cannot get last on empty fexpr"
         _  -> return $ last lst
+
+firstBuiltin :: Builtin
+firstBuiltin exprs = do
+    lst <- fexprOp exprs
+    case lst of
+        [] -> throwStutterError "Cannot get first on empty fexpr"
+        (x:_)  -> return $ StutterFexpr [x]
 
 ifBuiltin :: Builtin
 ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] = case s of
@@ -146,5 +163,7 @@ defaultEnvironmentStack =
                         ("if", StutterBuiltin ifBuiltin),
                         ("cmp", StutterBuiltin compareBuiltin),
                         ("empty", StutterBuiltin emptyBuiltin),
-                        (":", StutterBuiltin prependBuiltin)
+                        (":", StutterBuiltin prependBuiltin),
+                        ("first", StutterBuiltin firstBuiltin),
+                        ("deepdef", StutterBuiltin deepDefBuiltin)
                      ]
