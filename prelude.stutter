@@ -7,3 +7,14 @@ def [==] (\ [a b] [not (bool (cmp a b))])
 def [<] (\ [a b] [== (cmp a b) -1])
 
 def [>] (\ [a b] [== (cmp a b) 1])
+
+def [and] (\ [a b] [* a b])
+
+def [or] (\ [a b] [if [== a b] [1] [a]])
+
+def [map] (\ [f lst] [if (empty lst) [: (f (head lst)) (map f (tail lst))] [lst]])
+
+def [+] (\ [a b] [iadd a b])
+def [/] (\ [a b] [idiv a b])
+def [-] (\ [a b] [isub a b])
+def [*] (\ [a b] [imul a b])
