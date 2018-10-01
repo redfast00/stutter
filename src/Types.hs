@@ -67,7 +67,9 @@ data Expr = StutterSexpr [Expr]  |
 instance Show Expr where
     show (StutterSexpr xs)   = "(" ++ unwords (fmap show xs) ++ ")"
     show (StutterFexpr xs)   = "[" ++ unwords (fmap show xs) ++ "]"
-    show (StutterNumber x)   = show x
+    show (StutterNumber x)
+        | x == fromInteger (round x) = show (round x :: Integer)
+        | otherwise = show x
     show (StutterSymbol x)   = "S=" ++ x
     show (StutterString x)   = show x
     show (StutterBuiltin _)  = "\\builtin"
