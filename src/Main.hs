@@ -19,13 +19,13 @@ main = do
     case args of
         []       -> readEvalPrintLoop defaultEnvironmentStack
         (path:_) -> do
-            _ <- runTransformerStack defaultEnvironmentStack (tryStack (preludeExec path) ())
+            _ <- runTransformerStack defaultEnvironmentStack (preludeExec >> tryStack (runFile path) ())
             return ()
 
 readEvalPrintLoop :: EnvStack -> IO ()
 readEvalPrintLoop environment = do
     _ <- hSetBuffering stdout NoBuffering
-    _ <- runTransformerStack environment (keepOnDoing repl)
+    _ <- runTransformerStack environment (preludeExec >> keepOnDoing repl)
     return ()
 
 keepOnDoing :: TransformerStack () -> TransformerStack ()
@@ -33,10 +33,8 @@ keepOnDoing action = do
     tryStack action ()
     keepOnDoing action
 
-preludeExec :: FilePath -> TransformerStack ()
-preludeExec path = do
-    tryStack (runFile "prelude.stutter") ()
-    runFile path
+preludeExec :: TransformerStack ()
+preludeExec = tryStack (runFile "prelude.stutter") ()
 
 runFile ::  FilePath -> TransformerStack ()
 runFile path = do
