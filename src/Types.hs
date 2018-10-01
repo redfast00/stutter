@@ -11,7 +11,6 @@ type Environment = Map.HashMap Symbol Expr
 type EnvStack = [Environment]
 type Builtin = [Expr] -> TransformerStack Expr
 
--- TODO use stack of environments instead of maybe Environment
 
 emptyEnvironment :: Environment
 emptyEnvironment = Map.empty
@@ -32,7 +31,7 @@ addToEnvironment :: Symbol -> Expr -> TransformerStack ()
 addToEnvironment symbol expr = do
     env <- liftState get
     case env of
-        [] -> liftExcept $ throwError "no env??"
+        [] -> throwStutterError "No environment present. We messed up, please open an issue"
         (e:rest) -> do
             let new = defineVariable symbol expr e
             liftState $ put (new:rest)
@@ -46,7 +45,7 @@ lookupEnvironment symbol = do
     env <- liftState get
     let result = foldl1 (<|>) (fmap (Map.lookup symbol) env)
     case result of
-        Nothing -> liftExcept $ throwError $ "undefined variable: " ++ show symbol
+        Nothing -> throwStutterError $ "undefined variable: " ++ show symbol
         (Just x) -> return x
 
 data Expr = StutterSexpr [Expr]  |
