@@ -9,9 +9,7 @@ import           Types
 
 parseThing :: Parser a -> String -> TransformerStack a
 parseThing parser input = case parseStatement input parser of
-    Left err -> do
-        throwStutterError err
-        return undefined
+    Left err -> throwStutterError err
     Right value -> return value
 
 replLineParse :: Parser Expr
