@@ -85,7 +85,11 @@ evalBuiltin exprs = StutterSexpr <$> fexprOp exprs
 
 -- TODO: check list not empty, throw error
 headBuiltin :: Builtin
-headBuiltin exprs = head <$> fexprOp exprs
+headBuiltin exprs = do
+    lst <- fexprOp exprs
+    case lst of
+        [] -> throwStutterError "Cannot get head on empty fexpr"
+        (x:_)  -> return x
 
 tailBuiltin :: Builtin
 tailBuiltin exprs = StutterFexpr . tail <$> fexprOp exprs
@@ -94,14 +98,17 @@ initBuiltin :: Builtin
 initBuiltin exprs = StutterFexpr . init <$> fexprOp exprs
 
 lastBuiltin :: Builtin
-lastBuiltin exprs = last <$> fexprOp exprs
+lastBuiltin exprs = do
+    lst <- fexprOp exprs
+    case lst of
+        [] -> throwStutterError "Cannot get last on empty fexpr"
+        _  -> return $ last lst
 
--- TODO: cleanup
 ifBuiltin :: Builtin
 ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] = case s of
     0 -> evalBuiltin [iffalse]
     _ -> evalBuiltin [iftrue]
-ifBuiltin _ = liftExcept $ throwError "if needs three arguments: number, fexpr, fexpr"
+ifBuiltin _ = throwStutterError "if needs three arguments: number, fexpr, fexpr"
 
 -- TODO: compare other types in prelude
 compareBuiltin :: Builtin
@@ -109,7 +116,7 @@ compareBuiltin [StutterNumber a, StutterNumber b]
     | a < b     = return $ StutterNumber (-1)
     | a == b    = return $ StutterNumber 0
     | otherwise = return $ StutterNumber 1
-compareBuiltin _ = liftExcept $ throwError "Can only compare numbers"
+compareBuiltin _ = throwStutterError "Can only compare numbers"
 
 emptyBuiltin :: Builtin
 emptyBuiltin [StutterFexpr []] = return $ StutterNumber 1
@@ -117,7 +124,7 @@ emptyBuiltin _ = return $ StutterNumber 0
 
 prependBuiltin :: Builtin
 prependBuiltin [a, StutterFexpr l] = return $ StutterFexpr $ a:l
-prependBuiltin _ = liftExcept $ throwError "prepend: takes a f-expr and an expression"
+prependBuiltin _ = throwStutterError "prepend: takes a f-expr and an expression"
 
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =

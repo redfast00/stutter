@@ -98,7 +98,7 @@ tryStack action defaultReturn = do
             liftState $ put stack
             return r
 
-throwStutterError :: ErrorMessage -> TransformerStack ()
+throwStutterError :: ErrorMessage -> TransformerStack a
 throwStutterError message = liftExcept $ throwError message
 
 -- liftIO :: IO a -> TransformerStack a
