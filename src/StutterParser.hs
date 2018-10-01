@@ -1,4 +1,4 @@
-module StutterParser (fileParse, replLineParse) where
+module StutterParser (fileParse, replLineParse, parseThing) where
 
 import           Control.Applicative (empty, many, optional, some, (<|>))
 import           Data.Char
@@ -6,6 +6,13 @@ import           Data.Maybe
 
 import           Parser
 import           Types
+
+parseThing :: Parser a -> String -> TransformerStack a
+parseThing parser input = case parseStatement input parser of
+    Left err -> do
+        throwStutterError err
+        return undefined
+    Right value -> return value
 
 replLineParse :: Parser Expr
 replLineParse = StutterSexpr <$> separatedExprParse

@@ -1,8 +1,8 @@
-module Types (Builtin, Expr(..), ErrorMessage, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
+module Types (Builtin, Expr(..), ErrorMessage, emptyExpr, throwStutterError, tryStack, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
 
+import           Control.Applicative  ((<|>))
 import           Control.Monad.Except
-import           Control.Monad.State (get, put, modify, StateT, runStateT)
-import           Control.Applicative ((<|>))
+import           Control.Monad.State  (StateT, get, modify, put, runStateT)
 import qualified Data.HashMap.Strict  as Map
 
 
@@ -66,6 +66,9 @@ instance Show Expr where
     show (StutterBuiltin _)  = "\\builtin"
     show (StutterFunction (symbols, _, _)) = "\\function " ++ show symbols -- TODO improve this
 
+emptyExpr :: Expr
+emptyExpr = StutterSexpr []
+
 type ErrorMessage = String
 -- Monad transformer stack
 type TransformerStack a = (StateT EnvStack (ExceptT ErrorMessage IO)) a
@@ -82,6 +85,21 @@ liftState = id
 
 liftExcept :: ExceptT ErrorMessage IO a -> TransformerStack a
 liftExcept = lift
+
+tryStack :: TransformerStack a -> a -> TransformerStack a
+tryStack action defaultReturn = do
+    env <- liftState get
+    result <- liftIO $ runTransformerStack env action
+    case result of
+        Left err -> do
+            liftIO $ putStrLn err
+            return defaultReturn
+        Right (r, stack) -> do
+            liftState $ put stack
+            return r
+
+throwStutterError :: ErrorMessage -> TransformerStack ()
+throwStutterError message = liftExcept $ throwError message
 
 -- liftIO :: IO a -> TransformerStack a
 -- liftIO = lift . lift . lift
