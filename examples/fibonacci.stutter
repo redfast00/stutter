@@ -1,13 +1,5 @@
-def [fib] (\ [argument] [if (== argument 1) [if (== argument 0) [+ (fib (- argument 2)) (fib (- argument 1))] [0]] [1]])
+fun [fib argument] [if (< argument 2) [+ (fib (- argument 2)) (fib (- argument 1))] [1]]
 
-# Starts from 0
+# 1, 1, 2, 3, 5, 8, 13
 
-# 1
-show (fib 2)
-# 2
-show (fib 3)
-
-# 3
-show (fib 4)
-# 5
-show (fib 5)
+show (map fib [0 1 2 3 4 5 6])
