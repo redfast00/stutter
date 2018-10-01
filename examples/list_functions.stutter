@@ -1,0 +1,10 @@
+# 6
+show (foldr (+) 0 [1 2 3])
+
+def [sum] (foldr (+) 0)
+
+# 10
+show (sum [1 2 3 4])
+
+# 8
+show (foldr (/) 2 [8 12 24 4])
