@@ -1,20 +1,20 @@
-def [bool] (\ [a] [if a [0] [1]])
+def [fun] (\ [f body] [deepdef (first f) (\ (tail f) body)])
 
-def [not] (\ [a] [- 1 a])
+fun [+ a b] [iadd a b]
+fun [- a b] [isub a b]
+fun [* a b] [imul a b]
+fun [/ a b] [idiv a b]
 
-def [==] (\ [a b] [not (bool (cmp a b))])
+fun [bool a] [if a [0] [1]]
 
-def [<] (\ [a b] [== (cmp a b) -1])
+fun [== a b] [not (bool (cmp a b))]
+fun [<] [== (cmp a b) -1]
+fun [>] [== (cmp a b) 1]
 
-def [>] (\ [a b] [== (cmp a b) 1])
+fun [and a b] [* a b]
+fun [or a b] [if [== a b] [1] [a]]
+fun [not a] [- 1 a]
 
-def [and] (\ [a b] [* a b])
+fun [map f lst] [if (empty lst) [: (f (head lst)) (map f (tail lst))] [lst]]
 
-def [or] (\ [a b] [if [== a b] [1] [a]])
-
-def [map] (\ [f lst] [if (empty lst) [: (f (head lst)) (map f (tail lst))] [lst]])
-
-def [+] (\ [a b] [iadd a b])
-def [/] (\ [a b] [idiv a b])
-def [-] (\ [a b] [isub a b])
-def [*] (\ [a b] [imul a b])
+def [list] (\ [... collector] [collector])
