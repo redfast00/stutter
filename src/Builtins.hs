@@ -125,7 +125,7 @@ ifBuiltin :: Builtin
 ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] = case s of
     0 -> evalBuiltin [iffalse]
     _ -> evalBuiltin [iftrue]
-ifBuiltin _ = throwStutterError "if needs three arguments: number, fexpr, fexpr"
+ifBuiltin args = throwStutterError $ "if needs three arguments: number, fexpr, fexpr. Got: " ++ show args
 
 -- TODO: compare other types in prelude
 compareBuiltin :: Builtin
