@@ -7,15 +7,15 @@ import           Control.Monad.Except
 
 checkNumber :: Expr -> TransformerStack Double
 checkNumber (StutterNumber a) = return a
-checkNumber q                 = liftExcept $ throwError $ "not a number" ++ show q
+checkNumber q                 = liftExcept $ throwError $ "not a number: " ++ show q
 
 checkFexpr :: Expr -> TransformerStack [Expr]
 checkFexpr (StutterFexpr a) = return a
-checkFexpr q                = liftExcept $ throwError $ "not a fexpr" ++ show q
+checkFexpr q                = liftExcept $ throwError $ "not a fexpr: " ++ show q
 
 checkSymbol :: Expr -> TransformerStack Symbol
 checkSymbol (StutterSymbol a) = return a
-checkSymbol q                 = liftExcept $ throwError $ "not a symbol" ++ show q
+checkSymbol q                 = liftExcept $ throwError $ "not a symbol: " ++ show q
 
 lengthCheck :: [Expr] -> Int -> TransformerStack ()
 lengthCheck exprs expected = if expected ==  length exprs
@@ -49,7 +49,7 @@ divBuiltin exprs = do
     (a, b) <- binOp exprs
     case b of
         0 -> liftExcept $ throwError "Can't divide by zero"
-        _ -> return $ StutterNumber (a * b)
+        _ -> return $ StutterNumber (a / b)
 
 lambdaBuiltin :: Builtin
 lambdaBuiltin exprs = do
