@@ -1,0 +1,9 @@
+def [bool] (\ [a] [if a [0] [1]])
+
+def [not] (\ [a] [- 1 a])
+
+def [==] (\ [a b] [not (bool (cmp a b))])
+
+def [<] (\ [a b] [== (cmp a b) -1])
+
+def [>] (\ [a b] [== (cmp a b) 1])
