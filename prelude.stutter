@@ -16,5 +16,6 @@ fun [or a b] [if [== a b] [1] [a]]
 fun [not a] [- 1 a]
 
 fun [map f lst] [if (empty lst) [: (f (head lst)) (map f (tail lst))] [lst]]
+fun [foldr f initial lst] [if (empty lst) [f (head lst) (foldr f initial (tail lst))] [initial]]
 
 def [list] (\ [... collector] [collector])
