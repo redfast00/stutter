@@ -7,27 +7,30 @@ import           Control.Monad.Except
 evalStatement :: Expr -> TransformerStack Expr
 evalStatement s@(StutterSexpr []) = return s
 evalStatement (StutterSexpr [x]) = evalStatement x
-evalStatement (StutterSexpr (x:xxs)) = do
-        xs <- mapM evalStatement xxs
+evalStatement (StutterSexpr (x:arguments)) = do
         function <- evalStatement x
         case function of
             (StutterBuiltin builtin) -> do
-                evaluatedArgs <- mapM evalStatement xs
+                evaluatedArgs <- mapM evalStatement arguments
                 result <- builtin evaluatedArgs
                 evalStatement result
             (StutterFunction (lambdaArgs, expression, environment)) -> case lambdaArgs of
                 ["...", collector] -> do
-                    let finalEnvironment = defineVariable collector (StutterFexpr xs) environment
+                    xxs <- mapM evalStatement arguments
+                    let finalEnvironment = defineVariable collector (StutterFexpr xxs) environment
                     evalFunction finalEnvironment expression
-                ("...":_) -> liftExcept $ throwError "incorrect vararg syntax"
-                [] -> liftExcept $ throwError "no more arguments to apply"
+                ("...":_) -> throwStutterError "incorrect vararg syntax"
+                [] -> throwStutterError "no more arguments to apply"
                 [variable] -> do
-                    let finalEnvironment = defineVariable variable (head xs) environment
-                    evalFunction finalEnvironment expression
+                    value <- evalStatement $ head arguments
+                    let finalEnvironment = defineVariable variable value environment
+                    retval <- evalFunction finalEnvironment expression
+                    evalStatement $ StutterSexpr $ retval : tail arguments
                 (variable:_) -> do
-                    let newenv = defineVariable variable (head xs) environment
-                    evalStatement $ StutterSexpr $ StutterFunction (tail lambdaArgs, expression, newenv) : tail xs
-            _ -> liftExcept $ throwError "s-expr should start with function"
+                    value <- evalStatement $ head arguments
+                    let newenv = defineVariable variable value environment
+                    evalStatement $ StutterSexpr $ StutterFunction (tail lambdaArgs, expression, newenv) : tail arguments
+            _ -> throwStutterError "s-expr should start with function"
 evalStatement (StutterSymbol symbol) = lookupEnvironment symbol
 evalStatement a = return a
 
