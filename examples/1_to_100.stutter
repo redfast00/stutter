@@ -1,3 +1,13 @@
-def [ignore] ( \ [ignd returned] [returned] )
-def [f] ( \ [huidig] [if (cmp huidig 100) [show huidig] [ignore (show huidig) (f (+ 1 huidig))]])
-(f 1)
+# `chain` chains two expressions together and returns last value
+
+# Counts up to 100
+fun [toHundred current] [if (< current 100) [show current] [chain (show current) (toHundred (+ 1 current))]]
+
+# prints 1, 2 , ... 100
+(toHundred 1)
+
+# Same as toHundred, but with expressions in chain switched
+fun [fromHundred current] [if (< current 100) [show current] [chain (fromHundred (+ 1 current)) (show current)]]
+
+# prints 100, 99, ... 1
+(fromHundred 1)

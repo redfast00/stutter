@@ -35,3 +35,5 @@ def [flip] (\ [f a b] [f b a])
 def [length] (foldr (\ [a b] [+ b 1]) 0)
 
 fun [filter predicate lst] [foldr (\ [a b] [if (predicate a) [b] [: a b]]) [] lst]
+
+fun [chain ignored returnvalue] [returnvalue]
