@@ -2,6 +2,7 @@ module Builtins (defaultEnvironmentStack) where
 
 import           Types
 
+import           Data.Char (chr, ord)
 
 checkNumber :: Expr -> TransformerStack Double
 checkNumber (StutterNumber a) = return a
@@ -96,8 +97,8 @@ headBuiltin :: Builtin
 headBuiltin exprs = do
     lst <- fexprOp exprs
     case lst of
-        [] -> throwStutterError "Cannot get head on empty fexpr"
-        (x:_)  -> return x
+        []    -> throwStutterError "Cannot get head on empty fexpr"
+        (x:_) -> return x
 
 tailBuiltin :: Builtin
 tailBuiltin exprs = StutterFexpr . tail <$> fexprOp exprs
@@ -116,8 +117,8 @@ firstBuiltin :: Builtin
 firstBuiltin exprs = do
     lst <- fexprOp exprs
     case lst of
-        [] -> throwStutterError "Cannot get first on empty fexpr"
-        (x:_)  -> return $ StutterFexpr [x]
+        []    -> throwStutterError "Cannot get first on empty fexpr"
+        (x:_) -> return $ StutterFexpr [x]
 
 ifBuiltin :: Builtin
 ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] = case s of
@@ -135,11 +136,31 @@ compareBuiltin _ = throwStutterError "Can only compare numbers"
 
 emptyBuiltin :: Builtin
 emptyBuiltin [StutterFexpr []] = return $ StutterNumber 1
-emptyBuiltin _ = return $ StutterNumber 0
+emptyBuiltin _                 = return $ StutterNumber 0
 
 prependBuiltin :: Builtin
 prependBuiltin [a, StutterFexpr l] = return $ StutterFexpr $ a:l
 prependBuiltin _ = throwStutterError "prepend: takes a f-expr and an expression"
+
+readBuiltin :: Builtin
+readBuiltin [StutterNumber 0] = do
+    result <- liftIO getLine
+    return $ StutterString result
+readBuiltin _ = throwStutterError "read: not supported"
+
+fexpr2strBuiltin :: Builtin
+fexpr2strBuiltin [StutterFexpr args] = do
+        result <- mapM char args
+        return $ StutterString result
+        where char (StutterNumber a)
+                | a == fromInteger (round a) && a >= 0 = return $ chr (round a :: Int)
+                | otherwise = throwStutterError "Cannot convert non-natural number to char"
+              char _ = throwStutterError "fexpr2str: needs a number"
+fexpr2strBuiltin _ = throwStutterError "fexpr2str: takes a fexpr"
+
+str2fexprBuiltin :: Builtin
+str2fexprBuiltin [StutterString characters] = return $ StutterFexpr $ map (StutterNumber . fromIntegral . ord) characters
+str2fexprBuiltin _ = throwStutterError "fexpr2str: takes a string"
 
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
@@ -163,5 +184,8 @@ defaultEnvironmentStack =
                         ("empty", StutterBuiltin emptyBuiltin),
                         (":", StutterBuiltin prependBuiltin),
                         ("first", StutterBuiltin firstBuiltin),
-                        ("deepdef", StutterBuiltin deepDefBuiltin)
+                        ("deepdef", StutterBuiltin deepDefBuiltin),
+                        ("read", StutterBuiltin readBuiltin),
+                        ("fexpr-str", StutterBuiltin fexpr2strBuiltin),
+                        ("str-fexpr", StutterBuiltin str2fexprBuiltin)
                      ]
