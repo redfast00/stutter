@@ -2,25 +2,23 @@ module Builtins (defaultEnvironmentStack) where
 
 import           Types
 
-import           Control.Monad.Except
-
 
 checkNumber :: Expr -> TransformerStack Double
 checkNumber (StutterNumber a) = return a
-checkNumber q                 = liftExcept $ throwError $ "not a number: " ++ show q
+checkNumber q                 = throwStutterError $ "not a number: " ++ show q
 
 checkFexpr :: Expr -> TransformerStack [Expr]
 checkFexpr (StutterFexpr a) = return a
-checkFexpr q                = liftExcept $ throwError $ "not a fexpr: " ++ show q
+checkFexpr q                = throwStutterError $ "not a fexpr: " ++ show q
 
 checkSymbol :: Expr -> TransformerStack Symbol
 checkSymbol (StutterSymbol a) = return a
-checkSymbol q                 = liftExcept $ throwError $ "not a symbol: " ++ show q
+checkSymbol q                 = throwStutterError $ "not a symbol: " ++ show q
 
 lengthCheck :: [Expr] -> Int -> TransformerStack ()
 lengthCheck exprs expected = if expected ==  length exprs
     then return ()
-    else liftExcept $ throwError $ "Incorrect amount of arguments, expected " ++ show expected
+    else throwStutterError $ "Incorrect amount of arguments, expected " ++ show expected
 
 binOp :: [Expr] -> TransformerStack (Double, Double)
 binOp exprs = do
@@ -48,7 +46,7 @@ divBuiltin :: Builtin
 divBuiltin exprs = do
     (a, b) <- binOp exprs
     case b of
-        0 -> liftExcept $ throwError "Can't divide by zero"
+        0 -> throwStutterError "Can't divide by zero"
         _ -> return $ StutterNumber (a / b)
 
 lambdaBuiltin :: Builtin
@@ -67,7 +65,7 @@ defBuiltin exprs = case exprs of
         unpackedVars <- mapM checkSymbol vars
         mapM_ (uncurry addToEnvironment) (zip unpackedVars values)
         return $ StutterSexpr []
-    _ -> liftExcept $ throwError "def: need at least two arguments"
+    _ -> throwStutterError "def: need at least two arguments"
 
 deepDefBuiltin :: Builtin
 deepDefBuiltin exprs = case exprs of
@@ -77,7 +75,7 @@ deepDefBuiltin exprs = case exprs of
         unpackedVars <- mapM checkSymbol vars
         mapM_ (uncurry deepAddToEnvironment) (zip unpackedVars values)
         return $ StutterSexpr []
-    _ -> liftExcept $ throwError "deepdef: need at least two arguments"
+    _ -> throwStutterError "deepdef: need at least two arguments"
 
 showBuiltin :: Builtin
 showBuiltin exprs = do
@@ -93,7 +91,7 @@ fexprOp exprs = do
 evalBuiltin :: Builtin
 evalBuiltin exprs = StutterSexpr <$> fexprOp exprs
 
--- TODO: check list not empty, throw error
+
 headBuiltin :: Builtin
 headBuiltin exprs = do
     lst <- fexprOp exprs

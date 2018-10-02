@@ -2,8 +2,6 @@ module StutterEvaluator (evalStatement) where
 
 import           Types
 
-import           Control.Monad.Except
-
 evalStatement :: Expr -> TransformerStack Expr
 evalStatement s@(StutterSexpr []) = return s
 evalStatement (StutterSexpr [x]) = evalStatement x

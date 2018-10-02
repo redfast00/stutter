@@ -1,7 +1,7 @@
 module Types (Builtin, Expr(..), ErrorMessage, emptyExpr, throwStutterError, deepAddToEnvironment,  tryStack, createEnvironment, defineVariable, emptyEnvironment, addToEnvironment, lookupEnvironment, pushEnvironment, popEnvironment,  Symbol, TransformerStack, TransformerStackResult, liftExcept, liftIO, liftState, runTransformerStack, Environment, EnvStack) where
 
 import           Control.Applicative  ((<|>))
-import           Control.Monad.Except
+import           Control.Monad.Except (ExceptT, throwError, runExceptT, lift, liftIO)
 import           Control.Monad.State  (StateT, get, modify, put, runStateT)
 import qualified Data.HashMap.Strict  as Map
 
