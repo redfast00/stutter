@@ -24,3 +24,9 @@ fun [max a b] [if (> a b) [b] [a]]
 fun [min a b] [if (< a b) [b] [a]]
 
 fun [zip a b] [if (or (empty a) (empty b)) [: (list (head a) (head b)) (zip (tail a) (tail b))] [[]]]
+
+fun [++ a b] [if (empty a) [++ (init a) (: (last a) b)] [b]]
+
+def [flip] (\ [f a b] [f b a])
+
+def [length] (foldr (\ [a b] [+ b 1]) 0)
