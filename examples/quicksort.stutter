@@ -1,0 +1,6 @@
+fun [quicksort lst] [if (empty lst) [++ (quicksort (filter (> (head lst)) (tail lst))) (: (head lst) (quicksort (filter (<= (head lst)) (tail lst))))] [[]]]
+
+
+show (quicksort [2 1 3])
+
+show (quicksort [5 1 9 4 6 7 3 8 2 10])
