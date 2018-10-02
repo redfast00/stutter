@@ -1,5 +1,7 @@
 module Main where
 
+import System.Console.Readline (readline, addHistory)
+
 import           Control.Exception  (tryJust)
 import           Control.Monad      (forM_)
 import           System.Environment (getArgs)
@@ -48,11 +50,12 @@ runFile path = do
 
 repl :: TransformerStack ()
 repl = do
-    liftIO $ putStr "stutter> "
-    line <- liftIO getLine
-    case line of
-        ":q" -> liftIO exitSuccess
-        _    -> do
+    maybeLine <- liftIO $ readline "\ESC[31mstutter>\ESC[0m "
+    case maybeLine of
+        Nothing -> liftIO exitSuccess
+        (Just ":q") -> liftIO exitSuccess
+        (Just line) -> do
+            liftIO $ addHistory line
             expr <- parseThing replLineParse line
             r <- evalStatement expr
             liftIO $ print r

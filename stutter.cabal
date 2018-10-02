@@ -17,6 +17,6 @@ executable stutter
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5, unordered-containers, mtl
+  build-depends:       base >= 4.7 && < 5, unordered-containers, mtl, readline
   ghc-options:         -Wall -Werror
   other-modules:     Builtins, Parser, StutterEvaluator, StutterParser, Types
