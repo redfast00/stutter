@@ -8,8 +8,11 @@ fun [/ a b] [idiv a b]
 fun [bool a] [if a [0] [1]]
 
 fun [== a b] [not (bool (cmp a b))]
+fun [/= a b] [bool (cmp a b)]
 fun [< a b] [== (cmp a b) -1]
 fun [> a b] [== (cmp a b) 1]
+fun [<= a b] [/= (cmp a b) 1]
+fun [>= a b] [/= (cmp a b) -1]
 
 fun [and a b] [* a b]
 fun [or a b] [if (== a b) [1] [a]]
@@ -30,3 +33,5 @@ fun [++ a b] [if (empty a) [++ (init a) (: (last a) b)] [b]]
 def [flip] (\ [f a b] [f b a])
 
 def [length] (foldr (\ [a b] [+ b 1]) 0)
+
+fun [filter predicate lst] [foldr (\ [a b] [if (predicate a) [b] [: a b]]) [] lst]
