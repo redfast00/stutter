@@ -1,0 +1,22 @@
+def [zero] (\ [f x] [x])
+def [one] (\ [f x] [f x])
+def [two] (\ [f x] [f (f x)])
+def [three] (\ [f x] [f (f (f x))])
+# or alternatively
+def [four] (\ [f x] [f (three f x)])
+
+# peano to regular number
+def [count] (\ [peano] [(peano (+ 1)) 0])
+
+def [add] (\ [a b f x] [b f (a f x)])
+def [mul] (\ [a b f] [b (a f)])
+def [exp] (\ [a b] [b a])
+
+def [toPeano] (\ [n] [if (== n 0) [add one (toPeano (- n 1))] [zero]])
+
+show (count (exp two four))
+show (count (mul four three))
+show (count (add four three))
+
+show (count (toPeano 0))
+show (count (toPeano 20))
