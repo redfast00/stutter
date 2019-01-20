@@ -37,3 +37,7 @@ def [length] (foldr (\ [a b] [+ b 1]) 0)
 fun [filter predicate lst] [foldr (\ [a b] [if (predicate a) [b] [: a b]]) [] lst]
 
 fun [chain ignored returnvalue] [returnvalue]
+
+fun [range from to] [if (>= from to) [: from (range (+ from 1) to)] [[]]]
+
+fun [irange from to] [if (> from to) [: from (irange (+ from 1) to)] [[]]]
