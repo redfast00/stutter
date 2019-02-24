@@ -13,7 +13,7 @@ parseThing parser input = case parseStatement input parser of
     Right value -> return value
 
 replLineParse :: Parser Expr
-replLineParse = StutterSexpr <$> separatedExprParse
+replLineParse = StutterSexpr <$> separatedExprParse separation
 
 line :: Parser a -> Parser a
 line p = do
@@ -43,6 +43,8 @@ space  = many whitespace
 separation :: Parser String
 separation = some whitespace
 
+newlineSeparation :: Parser String
+newlineSeparation = some (whitespace <|> character '\n')
 
 exprParse :: Parser Expr
 exprParse = useFirstParser [numberParser, sexprParse, fexprParse, stringParse, symbolParse]
@@ -63,12 +65,12 @@ commaPart = do
     s <- numbers
     return $ f:s
 
-separatedExprParse :: Parser [Expr]
-separatedExprParse = do
+separatedExprParse :: Parser String -> Parser [Expr]
+separatedExprParse separationParser = do
     _ <- space
     expressions <- many (do
         f <- exprParse
-        _ <- separation
+        _ <- separationParser
         return f
                         )
     last_expression <- optional exprParse
@@ -78,14 +80,14 @@ separatedExprParse = do
 sexprParse :: Parser Expr
 sexprParse = do
     _ <- character '('
-    expressions <- separatedExprParse
+    expressions <- separatedExprParse newlineSeparation
     _ <- character ')'
     return $ StutterSexpr expressions
 
 fexprParse :: Parser Expr
 fexprParse = do
     _ <- character '['
-    expressions <- separatedExprParse
+    expressions <- separatedExprParse newlineSeparation
     _ <- character ']'
     return $ StutterFexpr expressions
 
