@@ -160,7 +160,11 @@ fexpr2strBuiltin _ = throwStutterError "fexpr2str: takes a fexpr"
 
 str2fexprBuiltin :: Builtin
 str2fexprBuiltin [StutterString characters] = return $ StutterFexpr $ map (StutterNumber . fromIntegral . ord) characters
-str2fexprBuiltin _ = throwStutterError "fexpr2str: takes a string"
+str2fexprBuiltin _ = throwStutterError "str2fexpr: takes a string"
+
+tostring :: Builtin
+tostring [variable] = return $ StutterString $ show variable
+tostring _ = throwStutterError "tostring: takes one argument"
 
 defaultEnvironmentStack :: EnvStack
 defaultEnvironmentStack =
@@ -187,5 +191,6 @@ defaultEnvironmentStack =
                         ("deepdef", StutterBuiltin deepDefBuiltin),
                         ("read", StutterBuiltin readBuiltin),
                         ("fexpr-str", StutterBuiltin fexpr2strBuiltin),
-                        ("str-fexpr", StutterBuiltin str2fexprBuiltin)
+                        ("str-fexpr", StutterBuiltin str2fexprBuiltin),
+                        ("tostring", StutterBuiltin tostring)
                      ]

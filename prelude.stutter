@@ -41,3 +41,11 @@ fun [chain ignored returnvalue] [returnvalue]
 fun [range from to] [if (>= from to) [: from (range (+ from 1) to)] [[]]]
 
 fun [irange from to] [if (> from to) [: from (irange (+ from 1) to)] [[]]]
+
+fun [strappend a b] [fexpr-str (++ (str-fexpr a) (str-fexpr b))]
+
+def [strconcat] (foldr strappend "")
+
+fun [reverse lst] [foldr (\ [a b] [++ b (list a)]) [] lst]
+
+fun [isNumber charcode] [(and (<= charcode 57) (>= charcode 48))]
