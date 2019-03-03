@@ -126,13 +126,18 @@ ifBuiltin [StutterNumber s, iffalse@(StutterFexpr _), iftrue@(StutterFexpr _)] =
     _ -> evalBuiltin [iftrue]
 ifBuiltin args = throwStutterError $ "if needs three arguments: number, fexpr, fexpr. Got: " ++ show args
 
+orderingToNumber :: Ordering -> Double
+orderingToNumber LT = -1
+orderingToNumber EQ = 0
+orderingToNumber GT = 1
+
 -- TODO: compare other types in prelude
 compareBuiltin :: Builtin
-compareBuiltin [StutterNumber a, StutterNumber b]
-    | a < b     = return $ StutterNumber (-1)
-    | a == b    = return $ StutterNumber 0
-    | otherwise = return $ StutterNumber 1
-compareBuiltin _ = throwStutterError "Can only compare numbers"
+compareBuiltin [StutterNumber a, StutterNumber b] =
+    return $ StutterNumber $ orderingToNumber (compare a b)
+compareBuiltin [StutterString a, StutterString b] =
+    return $ StutterNumber $ orderingToNumber (compare a b)
+compareBuiltin _ = throwStutterError "Can only compare numbers and strings"
 
 emptyBuiltin :: Builtin
 emptyBuiltin [StutterFexpr []] = return $ StutterNumber 1
