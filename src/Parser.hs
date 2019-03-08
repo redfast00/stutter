@@ -14,6 +14,7 @@ parse (Parser p) = p
 parseStatement :: String -> Parser a -> Either String a
 parseStatement a parser = case parse parser a of
     [(x,"")] -> Right x
+    []       -> Left "no parse possible"
     _        -> Left "parsing failed"
 
 apply :: Parser a -> String -> [(a,String)]

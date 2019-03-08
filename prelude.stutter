@@ -48,4 +48,8 @@ def [strconcat] (foldr strappend "")
 
 fun [reverse lst] [foldr (\ [a b] [++ b (list a)]) [] lst]
 
-fun [isNumber charcode] [(and (<= charcode 57) (>= charcode 48))]
+fun [isNumber charcode] [
+    (and
+        (<= charcode 57)
+        (>= charcode 48)
+    )]

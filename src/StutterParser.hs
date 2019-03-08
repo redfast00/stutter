@@ -65,6 +65,15 @@ commaPart = do
     s <- numbers
     return $ f:s
 
+separatedBy :: Parser String -> Parser a -> Parser [a]
+separatedBy separationParser p = separatedBy1 separationParser p <|> return []
+
+separatedBy1 :: Parser String -> Parser a -> Parser [a]
+separatedBy1 separationParser p = do
+    f <- p
+    rest <- many $ separationParser >> p
+    return $ f:rest
+
 separatedExprParse :: Parser String -> Parser [Expr]
 separatedExprParse separationParser = do
     _ <- space
@@ -80,14 +89,18 @@ separatedExprParse separationParser = do
 sexprParse :: Parser Expr
 sexprParse = do
     _ <- character '('
-    expressions <- separatedExprParse newlineSeparation
+    _ <- optional newlineSeparation
+    expressions <- separatedBy newlineSeparation exprParse
+    _ <- optional newlineSeparation
     _ <- character ')'
     return $ StutterSexpr expressions
 
 fexprParse :: Parser Expr
 fexprParse = do
     _ <- character '['
-    expressions <- separatedExprParse newlineSeparation
+    _ <- optional newlineSeparation
+    expressions <- separatedBy newlineSeparation exprParse
+    _ <- optional newlineSeparation
     _ <- character ']'
     return $ StutterFexpr expressions
 
