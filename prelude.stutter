@@ -48,6 +48,10 @@ def [strconcat] (foldr strappend "")
 
 fun [reverse lst] [foldr (\ [a b] [++ b (list a)]) [] lst]
 
+fun [parseChrs chrs] [if (empty chrs) [+ (- (head chrs) 48) (* 10 (parseChrs (tail chrs)))] [0] ]
+
+fun [parse str] [parseChrs (reverse (str-fexpr str)) ]
+
 fun [isNumber charcode] [
     (and
         (<= charcode 57)
