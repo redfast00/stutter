@@ -88,6 +88,8 @@ stutter> plus 40 2
 42
 ```
 
+The `def` function defines an F-expression of variables (first argument) to its remaining arguments.
+
 # Getting started
 
 - Install stack `sudo apt install haskell-stack`
