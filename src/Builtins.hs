@@ -49,6 +49,13 @@ divBuiltin exprs = do
     case b of
         0 -> throwStutterError "Can't divide by zero"
         _ -> return $ StutterNumber (a / b)
+        
+modBuiltin :: Builtin
+modBuiltin exprs = do
+    (a, b) <- binOp exprs
+    case b of
+        0 -> throwStutterError "Can't divide by zero"
+        _ -> return $ StutterNumber $ fromIntegral $ mod (round a) $ round b
 
 lambdaBuiltin :: Builtin
 lambdaBuiltin exprs = do
@@ -180,6 +187,7 @@ defaultEnvironmentStack =
                         ("isub", StutterBuiltin subBuiltin),
                         ("imul", StutterBuiltin mulBuiltin),
                         ("idiv", StutterBuiltin divBuiltin),
+                        ("imod", StutterBuiltin modBuiltin),
                         ("\\", StutterBuiltin lambdaBuiltin),
                         ("def", StutterBuiltin defBuiltin),
                         ("show", StutterBuiltin showBuiltin),
