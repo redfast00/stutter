@@ -20,6 +20,7 @@ stutter> + 2 3
 5.0
 ```
 
+
 ### Functions
 
 Stutter has a couple of built-in functions (for example `show`)
@@ -40,7 +41,29 @@ The `show` function prints the first argument to stdout, and returns `()` (an em
 
 ### F-expression
 
-Stutter has an F-expression (fixed expression), which allows for delayed evaluation: if we don't want a variable to evaluate, we can use an F-expression:
+
+### Fixed expressions
+
+If one wants to postpone the evaluation of an expression to a later point, one uses `[ expr ]` to create a **fixed expression**
+
+```
+stutter> [+ 5 3]
+[+ 5 3]
+```
+
+A fixed expression can be evaluated with `eval`
+
+```
+stutter> eval [+ 5 3]
+8
+```
+
+Note that this feature is totally useless in isolation - but with some more language features, it is indispensable.
+
+### Variables
+
+Stutter has an environment which maps variables onto expressions - `def` inserts such an expression into the environment.
+In order to capture the variable name, the first argument of `def` needs an f-expression with one or more variable names:
 
 ```
 stutter> def [a] 42
@@ -53,8 +76,17 @@ stutter> * b c
 6
 ```
 
-The `def` function defines an F-expression of variables (first argument) to its remaining arguments.
 
+### Defining functions
+
+To create a function:
+
+```
+stutter> fun [plus a b] [+ a b]
+()
+stutter> plus 40 2
+42
+```
 
 # Getting started
 
