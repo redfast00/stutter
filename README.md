@@ -54,3 +54,13 @@ stutter> * b c
 ```
 
 The `def` function defines an F-expression of variables (first argument) to its remaining arguments.
+
+
+# Getting started
+
+- Install stack `sudo apt install haskell-stack`
+- Clone the repository
+- Install the dependencies, run `stack install`
+- Start the interactive haskell shell: `stack repl`
+- In the shell, start the the Stutter-Repl: `main`
+
